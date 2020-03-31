@@ -188,31 +188,42 @@ const kruskal = (() => {
 })(); 
 
 /** @type {(graph: Graph) => Graph} */
-const prima = graph => {
-    const MST = createGraph(types.EDGE_LIST, []);
+const prim = graph => {
+    const mst = createGraph(types.EDGE_LIST, []);
 
-    const vertices = getVertices(graph);
-    const visited = [vertices.shift()];
-
-    while (vertices.length !== 0) {
-        const adjEdges = createEdgePriorityQueue(visited
-            .map(vertex => getAdjacentEdges(graph, vertex))
-            .flat()
-            .filter(edge => !visited.includes(edge.to))
-        );
-    
-        const edge = adjEdges.dequeue();
-        MST.data.push(edge);
-        visited.push(edge.to);
-        vertices.splice(vertices.indexOf(edge.to), 1);
+    const vertices = new Set(getVertices(graph));
+    if (vertices.size === 0) {
+        return mst;
     }
 
-    return MST;
+    const visited = new Set([[...vertices][0]]);
+    vertices.delete([...visited][0]);
+
+    while (vertices.size !== 0) {
+        const adjEdges = createEdgePriorityQueue(
+            [...visited]
+                .map(vertex => getAdjacentEdges(graph, vertex))
+                .flat()
+                .filter(edge => !visited.has(edge.to))
+        );
+
+        if (adjEdges.isEmpty()) {
+            // graph is not connected, so return MST built so far
+            return mst;
+        }
+
+        const edge = adjEdges.dequeue();
+        mst.data.push(edge);
+        visited.add(edge.to);
+        vertices.delete(edge.to);
+    }
+
+    return mst;
 };
 
 const MST = {
     kruskal,
-    prima
+    prim
 };
 
 module.exports = {

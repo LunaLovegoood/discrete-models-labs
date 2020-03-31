@@ -24,4 +24,4 @@ const graph = Graph.create(
 );
 
 Graph.print(graph);
-Graph.print(Graph.MST.prima(graph));
+Graph.print(Graph.MST.prim(graph));

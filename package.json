@@ -1,0 +1,9 @@
+{
+    "name": "labs",
+    "version": "1.0.0",
+    "description": "",
+    "scripts": {
+      "lab1": "node 1\\lab1.js"
+    },
+    "author": "Yurii Khomiak"
+}
