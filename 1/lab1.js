@@ -1,5 +1,6 @@
 const fs = require('fs');
-const Graph = require('./graph');
+const Graph = require('labs.graph');
+const mst = require('./mst');
 
 const getInputFilePath = argv => {
     const inputFilePath = argv[2];
@@ -19,9 +20,9 @@ const getInputFilePath = argv => {
 };
 
 const graph = Graph.create(
-    Graph.types.WEIGHT_MATRIX,
+    Graph.TYPES.WEIGHT_MATRIX,
     JSON.parse(fs.readFileSync(getInputFilePath(process.argv)))
 );
 
 Graph.print(graph);
-Graph.print(Graph.MST.prim(graph));
+Graph.print(mst.prim(graph));
