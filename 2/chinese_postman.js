@@ -80,10 +80,8 @@ const mergeCycles = cycles => {
         path.splice(
             insertIndex + 1,
             0,
-            ...[
-                ...cycle.slice(splitIndex + 1),
-                ... cycle.slice(0, splitIndex + 1)
-            ]
+            ...cycle.slice(splitIndex + 1),
+            ... cycle.slice(0, splitIndex + 1)
         );
     }
 
