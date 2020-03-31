@@ -50,17 +50,29 @@ const getCycles = edges => {
     return cycles;
 };
 
+const findCycleWithSameVertex = (path, cycles) => {
+    for (let i = 0; i < cycles.length; ++i) {
+        const cycle = cycles[i];
+        const insertIndex = cycle.map(({ to }) => to)
+            .findIndex(vertex => path.some(edge => edge.to === vertex));
+
+        if (insertIndex !== -1) {
+            return { cycle, insertIndex };
+        }
+    }
+};
+
 const mergeCycles = cycles => {
     const path = [...cycles.shift()];
 
     while (cycles.length !== 0) {
-        const cycle = cycles.shift();
-
-        const insertIndex = cycle.map(({ to }) => to)
-            .findIndex(to => path.some(edge => edge.to === to));
-        if (insertIndex === -1) {
+        const result = findCycleWithSameVertex(path, cycles);
+        if (!result) {
             throw new Error('Graph is not connected');
         }
+
+        const { insertIndex, cycle } = result;
+        cycles.splice(cycles.indexOf(cycle), 1);
 
         const insertVertex = cycle[insertIndex].to;
         const splitIndex = cycle.findIndex(edge => edge.to === insertVertex);
