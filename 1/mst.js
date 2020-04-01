@@ -90,7 +90,7 @@ const kruskal = (() => {
             const edge = edgeQueue.dequeue();
     
             if (!disjointSet.areConnected(edge.from, edge.to)) {
-                mst.data.push(edge);
+                Graph.insert(mst, edge);
                 disjointSet.union(edge.from, edge.to);
             }
         }
@@ -125,7 +125,7 @@ const prim = graph => {
         }
 
         const edge = adjEdges.dequeue();
-        mst.data.push(edge);
+        Graph.insert(mst, edge);
         visited.add(edge.to);
         vertices.delete(edge.to);
     }
