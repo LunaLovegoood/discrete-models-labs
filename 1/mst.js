@@ -115,7 +115,7 @@ const prim = graph => {
         const adjEdges = createEdgePriorityQueue(
             [...visited]
                 .map(vertex => Graph.getAdjacentEdges(graph, vertex))
-                .flat()
+                .reduce((acc, edges) => [...acc, ...edges], [])
                 .filter(edge => !visited.has(edge.to))
         );
 
