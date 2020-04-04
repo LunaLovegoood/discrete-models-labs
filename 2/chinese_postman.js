@@ -3,24 +3,16 @@ const Graph = require('labs.graph');
 const first = arr => arr[0];
 const last = arr => arr[arr.length - 1];
 
-const removeEdge = (arr, edge) => {
-    const index = arr.indexOf(edge);
+const removeElement = (arr, el) => {
+    const index = arr.indexOf(el);
     if (index === -1) {
         return;
     }
     arr.splice(index, 1);
 };
 
-const getAdjacentEdges = (edges, vertex) => edges.reduce((acc, edge) => {
-    if (edge.from === vertex || edge.to === vertex) {
-        return [...acc, edge];
-    }
-    return acc;
-}, []);
-
-const wait = timeout => new Promise(resolve => {
-    setTimeout(() => resolve(), timeout);
-});
+const getAdjacentEdges = (edges, vertex) => edges.reduce(
+    (acc, edge) => edge.connects(vertex, edge.other(vertex)) ? [...acc, edge] : acc, []);
 
 const getCycles = edges => {
     if (edges.length <= 1) {
@@ -31,17 +23,12 @@ const getCycles = edges => {
     const cycles = [];
 
     while (allEdges.length !== 0) {
-        const cycle = [allEdges.shift()];
+        const cycle = [...allEdges.shift().vertices];
         
-        while (first(cycle).from !== last(cycle).to) {
-            const adjacent = getAdjacentEdges(allEdges, last(cycle).to);
-
-            const nextEdge = first(adjacent).from !== last(cycle).to
-                ? Graph.createEdge(first(adjacent).to, first(adjacent).from)
-                : first(adjacent);
-
-            cycle.push(nextEdge);
-            removeEdge(allEdges, first(adjacent));
+        while (first(cycle) !== last(cycle)) {
+            const adjacent = getAdjacentEdges(allEdges, last(cycle));
+            cycle.push(first(adjacent).other(last(cycle)));
+            removeElement(allEdges, first(adjacent));
         }
 
         cycles.push(cycle);
@@ -53,8 +40,7 @@ const getCycles = edges => {
 const findCycleWithSameVertex = (path, cycles) => {
     for (let i = 0; i < cycles.length; ++i) {
         const cycle = cycles[i];
-        const insertIndex = cycle.map(({ to }) => to)
-            .findIndex(vertex => path.some(edge => edge.to === vertex));
+        const insertIndex = path.findIndex(vertex => cycle.includes(vertex));
 
         if (insertIndex !== -1) {
             return { cycle, insertIndex };
@@ -65,6 +51,9 @@ const findCycleWithSameVertex = (path, cycles) => {
 const mergeCycles = cycles => {
     const path = [...cycles.shift()];
 
+    // remove duplicated last elements
+    cycles = cycles.map(cycle => cycle.slice(0, cycle.length - 1));
+
     while (cycles.length !== 0) {
         const result = findCycleWithSameVertex(path, cycles);
         if (!result) {
@@ -74,8 +63,7 @@ const mergeCycles = cycles => {
         const { insertIndex, cycle } = result;
         cycles.splice(cycles.indexOf(cycle), 1);
 
-        const insertVertex = cycle[insertIndex].to;
-        const splitIndex = cycle.findIndex(edge => edge.to === insertVertex);
+        const splitIndex = cycle.indexOf(path[insertIndex]);
 
         path.splice(
             insertIndex + 1,
@@ -103,14 +91,14 @@ const solveEven = graph => {
 };
 
 const isEven = Graph.defineGraphFunction({
-    [Graph.TYPES.EDGE_LIST]: edges => {
-        const vertices = Graph.getVertices.impl[Graph.TYPES.EDGE_LIST](edges)
-            .reduce((acc, vertex) => ({ ...acc, [vertex]: 0 }), {});
-        edges.forEach(edge => {
-            vertices[edge.from]++;
-            vertices[edge.to]++;
+    [Graph.TYPES.EDGE_LIST]: ({ vertices, edges }) => {
+        const verticesObj = vertices.reduce(
+            (acc, vertex) => ({ ...acc, [vertex]: 0 }), {}
+        );
+        edges.forEach(({ vertices }) => {
+            vertices.forEach(vertex => { verticesObj[vertex]++; });
         });
-        return Object.values(vertices).every(count => count % 2 === 0);
+        return Object.values(verticesObj).every(count => count % 2 === 0);
     }
 });
 

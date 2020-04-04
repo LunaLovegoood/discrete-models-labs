@@ -19,10 +19,9 @@ const getInputFilePath = argv => {
     return inputFilePath;
 };
 
-const graph = Graph.create(
-    Graph.TYPES.WEIGHT_MATRIX,
-    JSON.parse(fs.readFileSync(getInputFilePath(process.argv)))
-);
+const graph = JSON.parse(fs.readFileSync(getInputFilePath(process.argv)));
 
 Graph.print(graph);
+
+console.log();
 Graph.print(mst.prim(graph));

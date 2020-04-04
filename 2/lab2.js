@@ -2,23 +2,24 @@ const Graph = require('labs.graph');
 const chinesePostman = require('./chinese_postman');
 
 const printPath = path => {
-    console.log(`${path[0].from} -> ` +
-        path.map(({ to }) => to).join(' -> '));
+    console.log(path.join(' -> '));
 };
 
 const graph = Graph.create(
     Graph.TYPES.EDGE_LIST,
     [
-        Graph.createEdge('A', 'B'),
-        Graph.createEdge('B', 'C'),
-        Graph.createEdge('C', 'D'),
-        Graph.createEdge('A', 'C'),
-        Graph.createEdge('D', 'E'),
-        Graph.createEdge('E', 'C'),
-        Graph.createEdge('G', 'F'),
-        Graph.createEdge('G', 'C'),
-        Graph.createEdge('C', 'F')
-        // Graph.createEdge('B', 'Z')
+        'A', 'B', 'C', 'D', 'E', 'F', 'G'
+    ],
+    [
+        Graph.createUndirectedEdge('A', 'B'),
+        Graph.createUndirectedEdge('B', 'C'),
+        Graph.createUndirectedEdge('C', 'D'),
+        Graph.createUndirectedEdge('A', 'C'),
+        Graph.createUndirectedEdge('D', 'E'),
+        Graph.createUndirectedEdge('E', 'C'),
+        Graph.createUndirectedEdge('G', 'F'),
+        Graph.createUndirectedEdge('G', 'C'),
+        Graph.createUndirectedEdge('C', 'F'),
     ]
 );
 

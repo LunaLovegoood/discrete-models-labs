@@ -1,8 +1,9 @@
 {
+    "type": "WeightMatrix",
     "vertices": [
         "A", "B", "C", "D", "E", "F", "G"
     ],
-    "weightMatrix": [
+    "edges": [
         [0, 7, 0,  5,  0,  0,  0],
         [7, 0, 8,  9,  7,  0,  0],
         [0, 8, 0,  0,  5,  0,  0],

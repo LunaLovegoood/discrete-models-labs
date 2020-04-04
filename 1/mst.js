@@ -32,76 +32,71 @@ class PriorityQueue {
     }
 }
 
-/** @type {(edges: Edge[]) => PriorityQueue} */
+class DisjointSet {
+    constructor(elements) {
+        this._parent = {};
+        elements.forEach(el => { this._parent[el] = el; });
+    }
+
+    union(a, b) {
+        let rootA = this.find(a);
+        let rootB = this.find(b);
+  
+        if (rootA === rootB) return;
+
+        if (rootA < rootB) {
+           if (this._parent[b] != b) {
+               this.union(this._parent[b], a);
+           }
+           this._parent[b] = this._parent[a];
+        }
+        else {
+           if (this._parent[a] != a) {
+               this.union(this._parent[a], b);
+           }
+           this._parent[a] = this._parent[b];
+        }
+    }
+
+    find(a) {
+        while (this._parent[a] !== a) {
+            a = this._parent[a];
+        }
+        return a;
+    }
+
+    areConnected(a, b) {
+        return this.find(a) === this.find(b);
+    }
+}
+
 const createEdgePriorityQueue = edges => {
     const edgeQueue = new PriorityQueue();
     edges.forEach(edge => edgeQueue.enqueue(edge, edge.weight));
     return edgeQueue;
 };
 
-/** @type {(graph: Graph) => Graph} */
-const kruskal = (() => {
-    class DisjointSet {
-        constructor(elements) {
-            this._parent = {};
-            elements.forEach(el => { this._parent[el] = el; });
-        }
-
-        union(a, b) {
-            let rootA = this.find(a);
-            let rootB = this.find(b);
-      
-            if (rootA === rootB) return;
-
-            if (rootA < rootB) {
-               if (this._parent[b] != b) {
-                   this.union(this._parent[b], a);
-               }
-               this._parent[b] = this._parent[a];
-            }
-            else {
-               if (this._parent[a] != a) {
-                   this.union(this._parent[a], b);
-               }
-               this._parent[a] = this._parent[b];
-            }
-        }
-
-        find(a) {
-            while (this._parent[a] !== a) {
-                a = this._parent[a];
-            }
-            return a;
-        }
-
-        areConnected(a, b) {
-            return this.find(a) === this.find(b);
+const kruskal = graph => {
+    const mst = Graph.create(Graph.TYPES.EDGE_LIST, Graph.getVertices(graph), []);
+    
+    const edgeQueue = createEdgePriorityQueue(Graph.getEdges(graph));
+    const disjointSet = new DisjointSet(Graph.getVertices(graph));
+    
+    while(!edgeQueue.isEmpty()) {
+        const edge = edgeQueue.dequeue();
+    
+        if (!disjointSet.areConnected(edge.first, edge.second)) {
+            Graph.insert(mst, edge);
+            disjointSet.union(edge.first, edge.second);
         }
     }
 
-    return graph => {
-        const mst = Graph.create(Graph.TYPES.EDGE_LIST, []);
-    
-        const edgeQueue = createEdgePriorityQueue(Graph.getEdges(graph));
-
-        const disjointSet = new DisjointSet(Graph.getVertices(graph));
-    
-        while(!edgeQueue.isEmpty()) {
-            const edge = edgeQueue.dequeue();
-    
-            if (!disjointSet.areConnected(edge.from, edge.to)) {
-                Graph.insert(mst, edge);
-                disjointSet.union(edge.from, edge.to);
-            }
-        }
-
-        return mst;
-    };
-})(); 
+    return mst;
+};
 
 /** @type {(graph: Graph) => Graph} */
 const prim = graph => {
-    const mst = Graph.create(Graph.TYPES.EDGE_LIST, []);
+    const mst = Graph.create(Graph.TYPES.EDGE_LIST, Graph.getVertices(graph), []);
 
     const vertices = new Set(Graph.getVertices(graph));
     if (vertices.size === 0) {
@@ -116,7 +111,7 @@ const prim = graph => {
             [...visited]
                 .map(vertex => Graph.getAdjacentEdges(graph, vertex))
                 .reduce((acc, edges) => [...acc, ...edges], [])
-                .filter(edge => !visited.has(edge.to))
+                .filter(edge => !visited.has(edge.second))
         );
 
         if (adjEdges.isEmpty()) {
@@ -126,14 +121,23 @@ const prim = graph => {
 
         const edge = adjEdges.dequeue();
         Graph.insert(mst, edge);
-        visited.add(edge.to);
-        vertices.delete(edge.to);
+        visited.add(edge.second);
+        vertices.delete(edge.second);
     }
+
+    return mst;
+};
+
+const boruvka = graph => {
+    const mst = Graph.create(Graph.TYPES.EDGE_LIST, Graph.getVertices(graph), []);
+
+
 
     return mst;
 };
 
 module.exports = {
     kruskal,
-    prim
+    prim,
+    boruvka
 };
