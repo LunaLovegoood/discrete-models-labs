@@ -1,5 +1,16 @@
 const Graph = require('labs.graph');
 
+const first = arr => arr[0];
+const last = arr => arr[arr.length - 1];
+
+const removeElement = (arr, el) => {
+    const index = arr.indexOf(el);
+    if (index === -1) {
+        return;
+    }
+    arr.splice(index, 1);
+};
+
 class PriorityQueue {
     constructor() {
         this._elements = [];
@@ -128,10 +139,70 @@ const prim = graph => {
     return mst;
 };
 
+const getComponent = (graph, vertex, component = [vertex]) => {
+    const newVertices = Graph.getAdjacentEdges(graph, vertex)
+        .map(edge => edge.other(vertex))
+        .filter(vertex => !component.includes(vertex));
+    if (newVertices.length === 0) {
+        return component;
+    }
+
+    return newVertices
+        .map(vertex => getComponent(graph, vertex, [...component, ...newVertices]))
+        .reduce((acc, el) => [...acc, ...el], [])
+        .reduce((acc, el) => acc.includes(el) ? acc : [...acc, el], []);
+};
+
+const findComponents = graph => {
+    const vertices = Graph.getVertices(graph);
+    const components = [];
+
+    while (vertices.length !== 0) {
+        const component = getComponent(graph, first(vertices));
+        components.push({
+            vertices: component,
+            cheapestEdge: Graph.createUndirectedEdge(null, null, Infinity)
+        });
+        component.forEach(vertex => removeElement(vertices, vertex));
+    }    
+
+    return components;
+};
+
 const boruvka = graph => {
     const mst = Graph.create(Graph.TYPES.EDGE_LIST, Graph.getVertices(graph), []);
 
+    while (true) {
+        const components = findComponents(mst);
+        if (components.length === 1) {
+            break;
+        }
 
+        components.forEach(component => {
+            component.vertices.forEach(vertex => {
+                const adjacent = Graph
+                    .getAdjacentEdges(graph, vertex)
+                    .filter(edge => !component.vertices.includes(edge.other(vertex)));
+                if (adjacent.length === 0) {
+                    return;
+                }
+
+                const minEdge = adjacent.reduce((min, el) => el.weight < min.weight ? el : min);
+                if (minEdge.weight < component.cheapestEdge.weight) {
+                    component.cheapestEdge = minEdge;
+                }
+            });
+        });
+
+        components.forEach(({ cheapestEdge }) => {
+            const isPresent = Graph.getEdges(mst).some(edge => (
+                edge.has(cheapestEdge.vertices[0]) && edge.has(cheapestEdge.vertices[1])
+            ));
+            if (!isPresent) {
+                Graph.insert(mst, cheapestEdge);
+            }
+        });
+    }
 
     return mst;
 };

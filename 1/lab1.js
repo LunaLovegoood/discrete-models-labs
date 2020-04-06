@@ -24,4 +24,4 @@ const graph = JSON.parse(fs.readFileSync(getInputFilePath(process.argv)));
 Graph.print(graph);
 
 console.log();
-Graph.print(mst.prim(graph));
+Graph.print(mst.boruvka(graph));
