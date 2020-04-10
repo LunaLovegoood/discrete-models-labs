@@ -1,4 +1,5 @@
 const fs = require('fs');
+const getInputFilePath = require('labs.get_input_path');
 
 const T = 7;
 const N = 5;
@@ -16,23 +17,6 @@ const KeyPoint = (name, input, output) => ({
  * @property {number} b
  * @property {number} c
  */
-
-const getInputFilePath = argv => {
-    const inputFilePath = argv[2];
-    if (!inputFilePath) {
-        console.log('Please provide path to input file.');
-        process.exit(1);
-    }
-    if (!fs.existsSync(inputFilePath)) {
-        console.log(`File "${inputFilePath}" doesn't exist.`);
-        process.exit(1);
-    }
-    if (!inputFilePath.endsWith('.json')) {
-        console.log('Input file should be a JSON file.');
-        process.exit(1);
-    }
-    return inputFilePath;
-};
 
 /**
  * @param {string} inputFilePath
