@@ -69,34 +69,15 @@ const swap = edges => {
         edge => edge.has(first) && edge.has(second)
     );
 
-    const replaceEdge = (cycle, xi, xj, newxi, newxj) => {
-        if (newxi === newxj) {
-            return;
-        }
-
-        const newEdge = findEdge(newxi, newxj);
-        const oldIndex = cycle.findIndex(edge => edge.has(xi) && edge.has(xj));
-        cycle.splice(oldIndex, 1, newEdge);
-    };
-
     return (cycle, i, j) => {
-        const vertices = VertexCycle(getVerticesFromCycle(cycle));
-        const x = {
-            'i-1': vertices.at(i - 1),
-            'i':   vertices.at(i),
-            'i+1': vertices.at(i + 1),
-            'j-1': vertices.at(j - 1),
-            'j':   vertices.at(j),
-            'j+1': vertices.at(j + 1),
-        };
+        const vertices = getVerticesFromCycle(cycle);
+        const vertexCycle = VertexCycle(vertices);
+        
+        const temp = vertices[i];
+        vertices[i] = vertices[j];
+        vertices[j] = temp;
 
-        const newCycle = cycle.slice();
-        replaceEdge(newCycle, x['i-1'], x['i'],   x['i-1'], x['j']);
-        replaceEdge(newCycle, x['i'],   x['i+1'], x['j'],   x['i+1']);
-        replaceEdge(newCycle, x['j-1'], x['j'],   x['j-1'], x['i']);
-        replaceEdge(newCycle, x['j'],   x['j+1'], x['i'],   x['j+1']);
-
-        return newCycle;
+        return vertices.map((_, i) => findEdge(vertexCycle.at(i), vertexCycle.at(i+1)));
     }
 };
 
@@ -111,17 +92,12 @@ const solve = (graph, iterationsLimit = 100) => {
     console.log(`[${cycle.join(', ')}] - ${getTotalWeight(cycle)}`);
 
     let iter = 0;
-    for (let i = 0; i < (n - 1); ++i) {
-        for (let j = i + 1; j < n; ++j) {
-            if (iter >= numberOfIterations) {
-                break;
-            }
-
+    for (let i = 0; i < (n - 1) && iter < numberOfIterations; ++i) {
+        for (let j = i + 1; j < n && iter < numberOfIterations; ++j) {
             const swapped = getSwappedCycle(cycle, i, j);
             if (getTotalWeight(swapped) < getTotalWeight(cycle)) {
                 cycle = swapped;
             }
-
             ++iter;
         }
     }
