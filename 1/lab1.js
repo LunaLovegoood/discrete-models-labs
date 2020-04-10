@@ -1,6 +1,6 @@
 const fs = require('fs');
 const Graph = require('labs.graph');
-const getInputFilePath = require('labs.get_input_path');
+const { getInputFilePath } = require('labs.utils');
 const mst = require('./mst');
 
 const graph = JSON.parse(fs.readFileSync(getInputFilePath(process.argv)));

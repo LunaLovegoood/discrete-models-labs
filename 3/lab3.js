@@ -1,5 +1,5 @@
 const fs = require('fs');
-const getInputFilePath = require('labs.get_input_path');
+const { getInputFilePath } = require('labs.utils');
 
 const T = 7;
 const N = 5;

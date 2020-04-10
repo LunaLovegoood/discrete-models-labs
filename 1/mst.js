@@ -1,7 +1,5 @@
 const Graph = require('labs.graph');
-
-const first = arr => arr[0];
-const last = arr => arr[arr.length - 1];
+const { first } = require('labs.utils');
 
 const removeElement = (arr, el) => {
     const index = arr.indexOf(el);

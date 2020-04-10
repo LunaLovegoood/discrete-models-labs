@@ -1,7 +1,7 @@
-const Graph = require('labs.graph');
-const chinesePostman = require('./chinese_postman');
 const fs = require('fs');
-const getInputFilePath = require('labs.get_input_path');
+const Graph = require('labs.graph');
+const { getInputFilePath } = require('labs.utils');
+const chinesePostman = require('./chinese_postman');
 
 const printPath = path => {
     console.log(path.join(' -> '));
