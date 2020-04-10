@@ -4,17 +4,9 @@ const { head, last, tail, isEmpty } = require('labs.utils');
 const getTotalWeight = edges => edges.reduce((acc, { weight }) => acc + weight, 0);
 
 const buildCycle = (vertices, edges) => {
-    const _connects = (edge, vertex) => edge.has(vertex) && edge.connects(vertex, edge.other(vertex));
-
-    const _findNextCycleEdge = (vertices, edges, lastVertex) => {
-        if (isEmpty(edges)) {
-            throw new Error("Can't find next cycle edge");
-        }
-        if (_connects(head(edges), lastVertex) && vertices.includes(head(edges).other(lastVertex))) {
-            return head(edges);
-        }
-        return _findNextCycleEdge(vertices, tail(edges), lastVertex);
-    };
+    const _findNextCycleEdge = (vertices, edges, lastVertex) => edges
+        .filter(edge => edge.has(lastVertex) && edge.connects(lastVertex, edge.other(lastVertex)))
+        .find(edge => vertices.includes(edge.other(lastVertex)));
 
     const _getLastVertex = cycle => {
         if (cycle.length === 1) {
@@ -30,7 +22,12 @@ const buildCycle = (vertices, edges) => {
         if (isEmpty(vertices)) {
             return cycle;
         }
+
         const nextEdge = _findNextCycleEdge(vertices, edges, _getLastVertex(cycle));
+        if (!nextEdge) {
+            throw new Error("Can't find next cycle edge");
+        }
+
         return _buildCycle(
             vertices.filter(vertex => !nextEdge.vertices.includes(vertex)),
             edges.filter(edge => edge !== nextEdge),
@@ -56,9 +53,82 @@ const buildCycle = (vertices, edges) => {
     );
 };
 
-const solve = (graph, numberOfIterations = 100) => {
-    const cycle = buildCycle(Graph.getVertices(graph), Graph.getEdges(graph));
+const VertexCycle = vertices => ({
+    at: index => vertices[(index + vertices.length) % vertices.length]
+});
+
+const getVerticesFromCycle = cycle => cycle.slice(1).reduce(
+    (vertices, edge) => [...vertices, edge.other(last(vertices))],
+    cycle[1].has(cycle[0].vertices[0])
+        ? cycle[0].vertices[0]
+        : cycle[0].vertices[1]
+);
+
+const swap = edges => {
+    const findEdge = (first, second) => edges.find(
+        edge => edge.has(first) && edge.has(second)
+    );
+
+    const replaceEdge = (cycle, xi, xj, newxi, newxj) => {
+        if (newxi === newxj) {
+            return;
+        }
+
+        const newEdge = findEdge(newxi, newxj);
+        const oldIndex = cycle.findIndex(edge => edge.has(xi) && edge.has(xj));
+        cycle.splice(oldIndex, 1, newEdge);
+    };
+
+    return (cycle, i, j) => {
+        const vertices = VertexCycle(getVerticesFromCycle(cycle));
+        const x = {
+            'i-1': vertices.at(i - 1),
+            'i':   vertices.at(i),
+            'i+1': vertices.at(i + 1),
+            'j-1': vertices.at(j - 1),
+            'j':   vertices.at(j),
+            'j+1': vertices.at(j + 1),
+        };
+
+        const newCycle = cycle.slice();
+        replaceEdge(newCycle, x['i-1'], x['i'],   x['i-1'], x['j']);
+        replaceEdge(newCycle, x['i'],   x['i+1'], x['j'],   x['i+1']);
+        replaceEdge(newCycle, x['j-1'], x['j'],   x['j-1'], x['i']);
+        replaceEdge(newCycle, x['j'],   x['j+1'], x['i'],   x['j+1']);
+
+        return newCycle;
+    }
+};
+
+const factorial = n => n === 0 ? 1 : n * factorial(n - 1);
+
+const solve = (graph, iterationsLimit = 100) => {
+    const n = Graph.getVertices(graph).length;
+    const numberOfIterations = Math.min(factorial(n - 1)/2, iterationsLimit);
+    const getSwappedCycle = swap(Graph.getEdges(graph));
+
+    let cycle = buildCycle(Graph.getVertices(graph), Graph.getEdges(graph));
     console.log(`[${cycle.join(', ')}] - ${getTotalWeight(cycle)}`);
+
+    let iter = 0;
+    for (let i = 0; i < (n - 1); ++i) {
+        for (let j = i + 1; j < n; ++j) {
+            if (iter >= numberOfIterations) {
+                break;
+            }
+
+            const swapped = getSwappedCycle(cycle, i, j);
+            if (getTotalWeight(swapped) < getTotalWeight(cycle)) {
+                cycle = swapped;
+            }
+
+            ++iter;
+        }
+    }
+
+    console.log(`Final cycle: [${cycle.join(', ')}] - ${getTotalWeight(cycle)}`);
+    
+    return cycle;
 };
 
 module.exports = {
