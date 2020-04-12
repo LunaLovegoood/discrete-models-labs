@@ -6,7 +6,8 @@
       "lab1": "node 1\\lab1.js",
       "lab2": "node 2\\lab2.js",
       "lab3": "node 3\\lab3.js",
-      "lab4": "node 4\\lab4.js"
+      "lab4": "node 4\\lab4.js",
+      "lab5": "node 5\\lab5.js"
     },
     "author": "Yurii Khomiak"
 }
